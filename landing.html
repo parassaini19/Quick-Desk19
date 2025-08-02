@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuickDesk - Select Role</title>
+<style>
+  body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Inter', sans-serif;
+    margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;
+  }
+  h1 {
+    font-weight: 700;
+    margin-bottom: 40px;
+    color: #00acc1;
+    user-select: none;
+  }
+  .role-buttons {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .role-card {
+    background: #222932;
+    border-radius: 18px;
+    width: 260px;
+    height: 180px;
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 0 18px rgba(0,172,193,0.12);
+    transition: box-shadow 0.3s;
+  }
+  .role-card:hover {
+    box-shadow: 0 4px 32px #00acc188;
+  }
+  .role-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #00acc1;
+    margin-bottom: 30px;
+    user-select: none;
+  }
+  .actions {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+  }
+  button {
+    background: #00acc1;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  button:hover {
+    background: #0097a7;
+  }
+  @media (max-width: 600px) {
+    .role-card {
+      width: 90vw;
+      margin-bottom: 20px;
+    }
+    .role-buttons {
+      gap: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+  <h1>Welcome to QuickDesk</h1>
+  <div class="role-buttons">
+    <div class="role-card">
+      <div class="role-title">User / Employee</div>
+      <div class="actions">
+        <button onclick="location.href='login.html?role=user'">Login</button>
+        <button onclick="location.href='register.html'">Register</button>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-title">Agent</div>
+      <div class="actions">
+        <button onclick="location.href='loginagent.html'">Login</button>
+        <button onclick="location.href='registeragent.html'">Register</button>
+      </div>
+    </div>
+    <div class="role-card">
+      <div class="role-title">Admin</div>
+      <div class="actions">
+        <button onclick="location.href='loginadmin.html'">Login</button>
+        <button onclick="location.href='registeradmin.html'">Register</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

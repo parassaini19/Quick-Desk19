@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuickDesk - Agent Dashboard</title>
+<style>
+  body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Inter', 'Roboto', Arial, sans-serif;
+    margin: 0;
+  }
+  nav {
+    background-color: #1f1f1f;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  nav .brand {
+    color: #00acc1;
+    font-weight: 700;
+    font-size: 1.7rem;
+  }
+  nav .right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  nav button {
+    cursor: pointer;
+    background-color: #00acc1;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: 700;
+    color: white;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  nav button:hover {
+    background-color: #0097a7;
+  }
+  .container {
+    max-width: 960px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
+  h2 {
+    margin-bottom: 24px;
+    color: #eceff1;
+  }
+  .ticket-queues {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .ticket-queues button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    background: #00acc1;
+    color: white;
+    transition: background-color 0.3s ease;
+  }
+  .ticket-queues button.active {
+    background: #0097a7;
+  }
+  .ticket-queues button:hover:not(.active) {
+    background: #00838f;
+  }
+  .filters {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .filters input[type="search"], .filters select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #2c2c2c;
+    color: #eee;
+    font-size: 1rem;
+    min-width: 150px;
+  }
+  .filters input[type="search"]::placeholder {
+    color: #888;
+  }
+  .filters input[type="search"]:focus, .filters select:focus {
+    outline: none;
+    border-color: #00acc1;
+    box-shadow: 0 0 8px #00acc1;
+    background: #2c2c2c;
+    color: #fff;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #1f1f1f;
+    box-shadow: 0 0 16px rgba(0,172,193,0.45);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1px solid #333;
+    color: #dbe9ee;
+  }
+  thead tr {
+    background-color: #222;
+    color: #00acc1;
+  }
+  tbody tr:hover {
+    background-color: #2c3a44;
+    color: #00acc1;
+  }
+  button.action-btn {
+    background: #00acc1;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: 700;
+    margin-right: 6px;
+    transition: background-color 0.3s ease;
+  }
+  button.action-btn:hover {
+    background-color: #0097a7;
+  }
+  button.assign-btn {
+    background-color: #4caf50;
+  }
+  button.assign-btn:hover {
+    background-color: #388e3c;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">QuickDesk - Agent Dashboard</div>
+  <div class="right">
+    <span id="welcomeAgent"></span>
+    <button id="logoutBtn">Logout</button>
+  </div>
+</nav>
+
+<div class="container">
+  <h2>Ticket Queues</h2>
+  <div class="ticket-queues">
+    <button id="btnMyTickets" class="active">My Tickets</button>
+    <button id="btnAllTickets">All Tickets</button>
+    <button id="btnCreateTicket" style="margin-left:auto;">Create Ticket</button>
+  </div>
+  <div class="filters">
+    <input type="search" id="searchInput" placeholder="Search tickets..." aria-label="Search tickets" />
+    <select id="statusFilter" aria-label="Filter by status">
+      <option value="">All Statuses</option>
+      <option value="Open">Open</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Resolved">Resolved</option>
+      <option value="Closed">Closed</option>
+    </select>
+  </div>
+  <table aria-live="polite" aria-label="Agent ticket list">
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Category</th>
+        <th>Status</th>
+        <th>Last Updated</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="ticketTableBody"></tbody>
+  </table>
+</div>
+
+<script>
+  (function() {
+    const userEmail = localStorage.getItem('quickdesk_user_email');
+    const userRole = localStorage.getItem('quickdesk_user_role');
+
+    if (!userEmail || userRole !== 'agent') {
+      alert('Please log in as an agent to view the dashboard.');
+      window.location.href = 'loginagent.html';
+      return;
+    }
+
+    document.getElementById('welcomeAgent').textContent = `Welcome, ${userEmail}`;
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('quickdesk_token');
+      localStorage.removeItem('quickdesk_user_email');
+      localStorage.removeItem('quickdesk_user_role');
+      window.location.href = 'loginagent.html';
+    });
+
+    const btnMyTickets = document.getElementById('btnMyTickets');
+    const btnAllTickets = document.getElementById('btnAllTickets');
+    const btnCreateTicket = document.getElementById('btnCreateTicket');
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const ticketTableBody = document.getElementById('ticketTableBody');
+
+    function getAllTickets() {
+      return JSON.parse(localStorage.getItem('quickdesk_tickets') || '[]');
+    }
+
+    function renderTickets(tickets) {
+      ticketTableBody.innerHTML = '';
+      if (!tickets.length) {
+        ticketTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#aaa; padding:1rem;">No tickets found</td></tr>';
+        return;
+      }
+
+      tickets.forEach(ticket => {
+        const tr = document.createElement('tr');
+        let assignBtnHtml = '';
+        if (!ticket.assignedAgent) {
+          assignBtnHtml = `<button class="action-btn assign-btn" onclick="assignTicket(${ticket.id})">Assign to Me</button>`;
+        }
+
+        tr.innerHTML = `
+          <td>${ticket.subject}</td>
+          <td>${ticket.category}</td>
+          <td>${ticket.status}</td>
+          <td>${ticket.lastUpdated}</td>
+          <td>
+            <button class="action-btn" onclick="replyTicket(${ticket.id})">Reply</button>
+            <button class="action-btn" onclick="shareTicket(${ticket.id})">Share</button>
+            ${assignBtnHtml}
+          </td>
+        `;
+        ticketTableBody.appendChild(tr);
+      });
+    }
+
+    window.assignTicket = function(ticketId) {
+      const tickets = getAllTickets();
+      const idx = tickets.findIndex(t => t.id === ticketId);
+      if (idx === -1) return;
+
+      tickets[idx].assignedAgent = userEmail;
+      tickets[idx].lastUpdated = new Date().toISOString().slice(0,16).replace('T', ' ');
+      localStorage.setItem('quickdesk_tickets', JSON.stringify(tickets));
+      alert('Ticket assigned to you.');
+      loadTickets();
+    };
+
+    window.replyTicket = function(ticketId) {
+      window.location.href = `ticket-detail.html?id=${ticketId}`;
+    };
+
+    window.shareTicket = function(ticketId) {
+      const url = window.location.origin + '/ticket-detail.html?id=' + ticketId;
+      if(navigator.clipboard) {
+        navigator.clipboard.writeText(url)
+          .then(() => alert('Ticket link copied to clipboard!'))
+          .catch(() => alert('Failed to copy link!'));
+      } else {
+        alert('Copy this link:\n' + url);
+      }
+    };
+
+    function loadTickets() {
+      let tickets = getAllTickets();
+
+      if(btnMyTickets.classList.contains('active')) {
+        tickets = tickets.filter(t => t.assignedAgent === userEmail);
+      }
+
+      // Filter by status
+      if(statusFilter.value) {
+        tickets = tickets.filter(t => t.status === statusFilter.value);
+      }
+
+      // Filter by search
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      if(searchTerm) {
+        tickets = tickets.filter(t => 
+          (t.subject && t.subject.toLowerCase().includes(searchTerm)) ||
+          (t.description && t.description.toLowerCase().includes(searchTerm))
+        );
+      }
+
+      renderTickets(tickets);
+    }
+
+    btnMyTickets.addEventListener('click', () => {
+      btnMyTickets.classList.add('active');
+      btnAllTickets.classList.remove('active');
+      loadTickets();
+    });
+
+    btnAllTickets.addEventListener('click', () => {
+      btnMyTickets.classList.remove('active');
+      btnAllTickets.classList.add('active');
+      loadTickets();
+    });
+
+    btnCreateTicket.addEventListener('click', () => {
+      window.location.href = 'create-ticket.html';
+    });
+
+    searchInput.addEventListener('input', loadTickets);
+    statusFilter.addEventListener('change', loadTickets);
+
+    // Initial load of "My Tickets"
+    loadTickets();
+  })();
+</script>
+
+</body>
+</html>
