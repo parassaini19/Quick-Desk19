@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuickDesk - Dashboard</title>
+<style>
+  body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Inter', 'Roboto', Arial, sans-serif;
+    margin: 0;
+  }
+  nav {
+    background-color: #1f1f1f;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  nav .brand {
+    color: #00acc1;
+    font-weight: 700;
+    font-size: 1.7rem;
+  }
+  nav .right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  nav button, nav .btn {
+    cursor: pointer;
+    background-color: #00acc1;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-weight: 700;
+    color: white;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  nav button:hover {
+    background-color: #0097a7;
+  }
+  nav .btn-outline {
+    background: transparent;
+    border: 1.5px solid #555;
+    color: #ddd;
+  }
+  nav .btn-outline:hover {
+    border-color: #00acc1;
+    color: #00acc1;
+  }
+  .container {
+    max-width: 960px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
+  h2 {
+    margin-bottom: 24px;
+    color: #eceff1;
+  }
+  .filters {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .filters input, .filters select {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #2c2c2c;
+    border: 1px solid #444;
+    color: #eee;
+    font-size: 1.1rem;
+    min-width: 160px;
+  }
+  .filters input::placeholder {
+    color: #888;
+  }
+  .filters input:focus, .filters select:focus {
+    outline: none;
+    border-color: #00acc1;
+    box-shadow: 0 0 10px #00acc1;
+    background: #2c2c2c;
+    color: #fff;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #1f1f1f;
+    box-shadow: 0 0 16px rgba(0,172,193,0.45);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    padding: 16px 18px;
+    text-align: left;
+    border-bottom: 1px solid #333;
+    vertical-align: middle;
+    color: #dbe9ee;
+  }
+  thead tr {
+    background-color: #222;
+    color: #00acc1;
+  }
+  tbody tr:hover {
+    background-color: #2c3a44;
+    color: #00acc1;
+  }
+  .badge {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .badge-open {
+    background-color: #ffb300;
+    color: #1a1a1a;
+  }
+  .badge-inprogress {
+    background-color: #00acc1;
+    color: white;
+  }
+  .badge-resolved {
+    background-color: #009688;
+    color: white;
+  }
+  .badge-closed {
+    background-color: #263238;
+    color: white;
+  }
+  .assign-btn {
+    cursor: pointer;
+    background-color: #00b300;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    padding: 8px 14px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    margin-right:8px;
+  }
+  .assign-btn:hover {
+    background-color: #009900;
+  }
+  .delete-btn {
+    cursor: pointer;
+    background-color: #ff4c4c;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    padding: 5px 10px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: background-color 0.25s ease;
+  }
+  .delete-btn:hover {
+    background-color: #e03e3e;
+  }
+  a.action-btn {
+    color: #00acc1;
+    font-weight: 700;
+    text-decoration: none;
+  }
+  a.action-btn:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand">QuickDesk</div>
+  <div class="right">
+    <span id="welcomeUser"></span>
+    <button id="newTicketBtn">New Ticket</button>
+    <button id="logoutBtn" class="btn-outline">Logout</button>
+  </div>
+</nav>
+
+<div class="container">
+  <h2>Your Tickets</h2>
+
+  <div class="filters">
+    <input id="searchInput" type="search" placeholder="Search tickets..." aria-label="Search tickets" />
+    <select id="statusFilter" aria-label="Filter by status">
+      <option value="">All Statuses</option>
+      <option value="Open">Open</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Resolved">Resolved</option>
+      <option value="Closed">Closed</option>
+    </select>
+    <select id="categoryFilter" aria-label="Filter by category">
+      <option value="">All Categories</option>
+    </select>
+    <select id="sortFilter" aria-label="Sort tickets">
+      <option value="recent">Recently Modified</option>
+      <option value="replied">Most Replied</option>
+    </select>
+  </div>
+
+  <table aria-live="polite" aria-label="Ticket list">
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Category</th>
+        <th>Status</th>
+        <th>Replies</th>
+        <th>Last Updated</th>
+        <th>Assigned Agent</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="ticketTableBody">
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function getTickets() {
+    return JSON.parse(localStorage.getItem('quickdesk_tickets')) || [];
+  }
+  function saveTickets(tickets) {
+    localStorage.setItem('quickdesk_tickets', JSON.stringify(tickets));
+  }
+  function getCategories() {
+    return JSON.parse(localStorage.getItem('quickdesk_categories')) || ['IT', 'HR', 'General'];
+  }
+  function ensureLoggedIn() {
+    if (!localStorage.getItem('quickdesk_token')) {
+      window.location.href = 'login.html';
+      return false;
+    }
+    return true;
+  }
+  function setWelcomeUser() {
+    const email = localStorage.getItem('quickdesk_user_email');
+    if (email) {
+      document.getElementById('welcomeUser').textContent = `Welcome, ${email}`;
+    }
+  }
+  const currentUserRole = localStorage.getItem('quickdesk_user_role') || 'enduser';
+  const currentUserEmail = localStorage.getItem('quickdesk_user_email') || 'guest@example.com';
+
+  function getStatusClass(status) {
+    switch(status) {
+      case 'Open': return 'badge-open';
+      case 'In Progress': return 'badge-inprogress';
+      case 'Resolved': return 'badge-resolved';
+      case 'Closed': return 'badge-closed';
+      default: return 'badge-open';
+    }
+  }
+
+  function renderCategoryOptions() {
+    const categoryFilter = document.getElementById('categoryFilter');
+    categoryFilter.innerHTML = '<option value="">All Categories</option>';
+    getCategories().forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat;
+      option.textContent = cat;
+      categoryFilter.appendChild(option);
+    });
+  }
+
+  function initializeSampleTickets() {
+    const tickets = getTickets();
+    if (tickets.length === 0) {
+      const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
+      const samples = [
+        {
+          id: 1,
+          subject: "Can't access Wi-Fi",
+          description: "Office Wi-Fi not working since morning.",
+          category: "IT",
+          status: "Open",
+          assignedAgent: null,
+          votes: 0,
+          upvotedBy: [],
+          downvotedBy: [],
+          replies: 1,
+          createdBy: currentUserEmail,
+          lastUpdated: now,
+          comments: [{author: currentUserEmail, text:"Office Wi-Fi not working.", time: now}]
+        },
+        {
+          id: 2,
+          subject: "Payroll question",
+          description: "Salary not credited for last month.",
+          category: "HR",
+          status: "In Progress",
+          assignedAgent: "agent@example.com",
+          votes: 0,
+          upvotedBy: [],
+          downvotedBy: [],
+          replies: 2,
+          createdBy: currentUserEmail,
+          lastUpdated: now,
+          comments: [{author:'user@example.com', text:"Salary issue.", time: now}]
+        },
+        {
+          id: 3,
+          subject: "Request new laptop",
+          description: "My laptop is slow, request upgrade.",
+          category: "General",
+          status: "Resolved",
+          assignedAgent: "agent@example.com",
+          votes: 0,
+          upvotedBy: [],
+          downvotedBy: [],
+          replies: 1,
+          createdBy: "otheruser@example.com",
+          lastUpdated: now,
+          comments: [{author:"otheruser@example.com", text:"Laptop upgrade request.", time: now}]
+        }
+      ];
+      saveTickets(samples);
+    }
+  }
+
+  function renderTickets() {
+    let tickets = getTickets();
+
+    if (currentUserRole === 'enduser') {
+      tickets = tickets.filter(t => t.createdBy === currentUserEmail);
+    } else if (currentUserRole === 'agent') {
+      tickets = tickets.filter(t => !t.assignedAgent || t.assignedAgent === currentUserEmail);
+    }
+
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const categoryFilter = document.getElementById('categoryFilter').value;
+    const sortFilter = document.getElementById('sortFilter').value;
+
+    if (searchTerm) {
+      tickets = tickets.filter(t => t.subject.toLowerCase().includes(searchTerm) || t.description.toLowerCase().includes(searchTerm));
+    }
+    if (statusFilter) {
+      tickets = tickets.filter(t => t.status === statusFilter);
+    }
+    if (categoryFilter) {
+      tickets = tickets.filter(t => t.category === categoryFilter);
+    }
+    if (sortFilter === 'recent') {
+      tickets.sort((a,b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+    } else if (sortFilter === 'replied') {
+      tickets.sort((a,b) => b.replies - a.replies);
+    }
+
+    const tbody = document.getElementById('ticketTableBody');
+    tbody.innerHTML = '';
+    if (tickets.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:1rem; color:#888;">No tickets found</td></tr>`;
+      return;
+    }
+
+    tickets.forEach(ticket => {
+      const tr = document.createElement('tr');
+
+      // Subject link
+      const tdSubject = document.createElement('td');
+      const a = document.createElement('a');
+      a.href = `ticket-detail.html?id=${ticket.id}`;
+      a.textContent = ticket.subject;
+      a.style.color = '#00acc1';
+      tdSubject.appendChild(a);
+      tr.appendChild(tdSubject);
+
+      // Category
+      const tdCategory = document.createElement('td');
+      tdCategory.textContent = ticket.category;
+      tr.appendChild(tdCategory);
+
+      // Status
+      const tdStatus = document.createElement('td');
+      const span = document.createElement('span');
+      span.className = 'badge ' + getStatusClass(ticket.status);
+      span.textContent = ticket.status;
+      tdStatus.appendChild(span);
+      tr.appendChild(tdStatus);
+
+      // Replies
+      const tdReplies = document.createElement('td');
+      tdReplies.textContent = ticket.replies || 0;
+      tr.appendChild(tdReplies);
+
+      // Last Updated
+      const tdUpdated = document.createElement('td');
+      tdUpdated.textContent = ticket.lastUpdated;
+      tr.appendChild(tdUpdated);
+
+      // Assigned Agent
+      const tdAssigned = document.createElement('td');
+      tdAssigned.textContent = ticket.assignedAgent || '-';
+      tr.appendChild(tdAssigned);
+
+      // Actions: Assign + Delete Buttons
+      const tdAction = document.createElement('td');
+
+      if ((currentUserRole === 'agent' || currentUserRole === 'admin') && !ticket.assignedAgent) {
+        const assignBtn = document.createElement('button');
+        assignBtn.className = 'assign-btn';
+        assignBtn.textContent = 'Assign to Me';
+        assignBtn.style.marginRight = '8px';
+        assignBtn.addEventListener('click', () => {
+          assignTicket(ticket.id, currentUserEmail);
+        });
+        tdAction.appendChild(assignBtn);
+      }
+
+      if (ticket.createdBy === currentUserEmail) {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.addEventListener('click', () => {
+          if (confirm(`Delete ticket "${ticket.subject}"?`)) {
+            deleteTicket(ticket.id);
+          }
+        });
+        tdAction.appendChild(deleteBtn);
+      } else if (!tdAction.hasChildNodes()) {
+        tdAction.textContent = '-';
+      }
+
+      tr.appendChild(tdAction);
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function assignTicket(ticketId, agentEmail) {
+    let tickets = getTickets();
+    const idx = tickets.findIndex(t => t.id === ticketId);
+    if (idx !== -1) {
+      tickets[idx].assignedAgent = agentEmail;
+      tickets[idx].lastUpdated = (new Date()).toISOString().slice(0,16).replace('T',' ');
+      saveTickets(tickets);
+      alert('Ticket assigned to you.');
+      renderTickets();
+    }
+  }
+
+  function deleteTicket(ticketId) {
+    let tickets = getTickets();
+    tickets = tickets.filter(t => t.id !== ticketId);
+    saveTickets(tickets);
+    alert('Ticket deleted.');
+    renderTickets();
+  }
+
+  document.getElementById('searchInput').addEventListener('input', renderTickets);
+  document.getElementById('statusFilter').addEventListener('change', renderTickets);
+  document.getElementById('categoryFilter').addEventListener('change', renderTickets);
+  document.getElementById('sortFilter').addEventListener('change', renderTickets);
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('quickdesk_token');
+    localStorage.removeItem('quickdesk_user_email');
+    localStorage.removeItem('quickdesk_user_role');
+    window.location.href = 'login.html';
+  });
+  document.getElementById('newTicketBtn').addEventListener('click', () => {
+    window.location.href = 'create-ticket.html';
+  });
+
+  function init() {
+    if (!ensureLoggedIn()) return;
+    setWelcomeUser();
+    renderCategoryOptions();
+    initializeSampleTickets();
+    renderTickets();
+  }
+
+  window.addEventListener('load', init);
+</script>
+
+</body>
+</html>
